@@ -12,20 +12,30 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - springboot-postgres-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d klustudentdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   backend:
-    image: chsathvika03/docker-git-actions-backend:latest
+    build:
+      context: ./STUDENTAPI-SPRINGBOOT
+      dockerfile: backend.Dockerfile
     container_name: docker-springboot
     ports:
       - "2025:2000"
     depends_on:
-      - postgresdb
+      postgresdb:
+        condition: service_healthy
     restart: on-failure
     networks:
       - springboot-postgres-net
 
   frontend:
-    image: chsathvika03/docker-git-actions-frontend:latest
+    build:
+      context: ./STUDENTAPI-REACT
+      dockerfile: frontend.Dockerfile
     container_name: docker-react
     ports:
       - "3000:80"
